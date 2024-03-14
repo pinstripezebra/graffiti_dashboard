@@ -14,35 +14,33 @@ from sklearn.model_selection import train_test_split
 
 # loading Datasets
 base_path = os.path.dirname(__file__)
-file_name = 'heart_failure_clinical_records_dataset,predictions.csv'
-feature_name = 'feature_importance.csv'
+file_name = 'combined.csv'
 total_path = base_path + '//Data//' 
 df1 = pd.read_csv(total_path + file_name)
-feature_importance = pd.read_csv(total_path + feature_name).sort_values(by = ['Importance'], 
-                                                                                             ascending=False)
+
 
 def filter_dataframe(input_df, var1, var2, var3):
 
     bp_list, sex_list,anaemia_list  = [], [], []
     # Filtering for blood pressure
     if var1== "all_values":
-        bp_list = input_df['high_blood_pressure'].drop_duplicates()
+        bp_list = input_df['City'].drop_duplicates()
     else:
         bp_list = [var1]
     # Filtering for sex
     if var2== "all_values":
-        sex_list = input_df['sex'].drop_duplicates()
+        sex_list = input_df['2020 population density'].drop_duplicates()
     else:
         sex_list = [var2]
     # Filtering for Anaemia
     if var3== "all_values":
-        anaemia_list = input_df['anaemia'].drop_duplicates()
+        anaemia_list = input_df['Estimate!!Households!!Median income (dollars)'].drop_duplicates()
     else:
         anaemia_list = [var3]
     # Applying filters to dataframe
-    input_df = input_df[(input_df['high_blood_pressure'].isin(bp_list)) &
-                              (input_df['sex'].isin(sex_list)) &
-                               (input_df['anaemia'].isin(anaemia_list))]
+    input_df = input_df[(input_df['City'].isin(bp_list)) &
+                              (input_df['2020 population density'].isin(sex_list)) &
+                               (input_df['Estimate!!Households!!Median income (dollars)'].isin(anaemia_list))]
     return input_df
 
 def draw_Text(input_text):
@@ -72,8 +70,6 @@ def draw_Image(input_figure):
             ),  
         ])
 
-# Returning model performance
-cmatrix = confusion_matrix(df1['DEATH_EVENT'], df1['Prediction'])
 
 # Building and Initializing the app
 dash_app = Dash(external_stylesheets=[dbc.themes.SLATE])
@@ -138,24 +134,24 @@ filters = html.Div([
                 html.H1('Heart Failure Prediction'),
                 dcc.Markdown('A comprehensive tool for examining factors impacting heart failure'),
 
-                html.Label('Blood Pressure'),
+                html.Label('City'),
                 dcc.Dropdown(
-                    id = 'BP-Filter',
-                    options = [{"label": i, "value": i} for i in df1['high_blood_pressure'].drop_duplicates()] + 
+                    id = 'City-Filter',
+                    options = [{"label": i, "value": i} for i in df1['City'].drop_duplicates()] + 
                                 [{"label": "Select All", "value": "all_values"}],
                     value = "all_values"),
 
-                html.Label('Sex'),
+                html.Label('2020 population density'),
                 dcc.Dropdown(
-                    id = 'Sex-Filter',
-                    options = [{"label": i, "value": i} for i in df1['sex'].drop_duplicates()] + 
+                    id = '2020 population density-Filter',
+                    options = [{"label": i, "value": i} for i in df1['2020 population density'].drop_duplicates()] + 
                                 [{"label": "Select All", "value": "all_values"}],
                     value = "all_values"),
 
-                html.Label('Anaemia'),
+                html.Label('Households Median income (dollars)'),
                 dcc.Dropdown(
-                    id = 'Anaemia-Filter',
-                    options = [{"label": i, "value": i} for i in df1['anaemia'].drop_duplicates()] + 
+                    id = 'Median income (dollars)-Filter',
+                    options = [{"label": i, "value": i} for i in df1['Estimate!!Households!!Median income (dollars)'].drop_duplicates()] + 
                                 [{"label": "Select All", "value": "all_values"}],
                     value = "all_values")])
              ])
@@ -166,21 +162,14 @@ sources = html.Div([
                 html.Div([
                     html.Div(children = [
                         html.Div([
-                            dcc.Markdown("""Data Description: This dataset contains 12 features that 
-                                         can be used to predict mortality by heart failure with each row representing 
-                                         a separate patient, the response variable is DEATH_EVENT.""")
+                            dcc.Markdown("""Data Description: This dataset contains 20,0000 streetview images from the
+                                         top 50 cities in the United States combined with census data on population and income.""")
                         ]),
                         html.Div([
                             html.A("Dataset available on Kaggle", 
-                                   href='https://www.kaggle.com/datasets/andrewmvd/heart-failure-clinical-data?select=heart_failure_clinical_records_dataset.csv', target="_blank")
+                                   href='https://www.kaggle.com/datasets/pinstripezebra/graffiti-classification', target="_blank")
                         ], style={'display': 'inline-block'})
                     ]),
-
-                html.H3('Citation'),
-                dcc.Markdown(
-                """Davide Chicco, Giuseppe Jurman: Machine learning can predict survival 
-                of patients with heart failure from serum creatinine and ejection fraction alone. 
-                BMC Medical Informatics and Decision Making 20, 16 (2020)""")
                 ])
              ])
 
