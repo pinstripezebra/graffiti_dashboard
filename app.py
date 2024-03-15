@@ -183,8 +183,6 @@ dash_app.layout = html.Div(children = [
                     dbc.Row(id = 'kpi-Row'), 
                     html.Br(),
                     dbc.Row(id = 'EDA-Row'),
-                    html.Br(),
-                    dbc.Row(id = 'ML-Row'), 
                     sources     
                 ]), color = 'dark'
             )
@@ -195,24 +193,24 @@ dash_app.layout = html.Div(children = [
 # callback for top row
 @callback(
     Output(component_id='EDA-Row', component_property='children'),
-    [Input('BP-Filter', 'value'),
-     Input('Sex-Filter', 'value'),
-     Input('Anaemia-Filter', 'value')]
+    [Input('City-Filter', 'value'),
+     Input('2020 population density-Filter', 'value'),
+     Input('Median income (dollars)-Filter', 'value')]
 )
-def update_output_div(bp, sex, anaemia):
+def update_output_div(city, population, income):
 
     #Making copy of DF and filtering
     filtered_df = df1
-    filtered_df = filter_dataframe(filtered_df, bp, sex, anaemia)
+    filtered_df = filter_dataframe(city,population, income)
 
     #Creating figures
-    factor_fig = px.histogram(filtered_df, x= 'age', facet_col="diabetes", color = 'DEATH_EVENT', 
-                              title = "Age and Diabetes vs. Death")
-    age_fig = px.scatter(filtered_df, x="ejection_fraction", y="serum_creatinine", facet_col="high_blood_pressure",
-                         color = "DEATH_EVENT", 
-                         title = "Ejection Fraction and Creatinine vs. Death")
-    time_fig = px.scatter(filtered_df, x = 'time', y = 'platelets', color = 'DEATH_EVENT',
-                              title = 'Time and Platelets vs Death')
+    factor_fig = px.bar(filtered_df, x= 'City', y="Graffiti_Count", color = 'State', 
+                              title = "City and State vs Graffiti")
+    age_fig = px.scatter(filtered_df, x='City', y="Graffiti_Count", 
+                         color="Estimate!!Households!!Median income (dollars)", 
+                         title = "City and Income vs Graffiti")
+    time_fig = px.scatter(filtered_df, x = 'City', y = 'Graffiti_Count', color = '2020',
+                              title = 'Graffiti versus population')
 
     return dbc.Row([
                 dbc.Col([
@@ -227,65 +225,28 @@ def update_output_div(bp, sex, anaemia):
             ])
 
 
-# callback for second row
-@callback(
-    Output(component_id='ML-Row', component_property='children'),
-    Input('Sex-Filter', 'value')
-)
-def update_model(value):
-
-    # Making copy of df
-    confusion = cmatrix
-    #x_copy = X_cols
-    f_importance = feature_importance
-
-    # Aggregating confusion dataframe and plotting
-    confusion_fig = px.imshow(confusion, 
-                              labels=dict(x="Predicted Value", 
-                                y="True Value", color="Prediction"),
-                                aspect="auto",
-                                text_auto=True,
-                                title = "Confusion Matrix - Predicted vs Actual Values")
-    
-    # Graphing feature importance
-    feature_fig =  px.bar(f_importance, x='Feature Name', y='Importance',
-                          title = 'Feature Importance')
-
-    return dbc.Row([
-                dbc.Col([
-                    draw_Image(feature_fig)
-                ], width={"size": 5}),
-                dbc.Col([
-                    draw_Image(confusion_fig)
-                ],width={"size": 3})
-            ])
-
 # callback for kpi row
 @callback(
     Output(component_id='kpi-Row', component_property='children'),
-    [Input('BP-Filter', 'value'),
-     Input('Sex-Filter', 'value'),
-     Input('Anaemia-Filter', 'value')]
+    [Input('City-Filter', 'value'),
+     Input('2020 population density-Filter', 'value'),
+     Input('Median income (dollars)-Filter', 'value')]
 )
-def update_kpi(bp, sex, anaemia):
+def update_kpi(city, population, income):
 
     # Copying and filtering dataframe
     filtered_df = df1
-    filtered_df = filter_dataframe(filtered_df, bp, sex, anaemia)
+    filtered_df = filter_dataframe(filtered_df, city, population, income)
 
-    observation_count = filtered_df.shape[0]
-    death_count = filtered_df[filtered_df['DEATH_EVENT']==1].shape[0]
-    no_death_count = filtered_df[filtered_df['DEATH_EVENT']==0].shape[0]
-    
     return dbc.Row([
                         dbc.Col([
-                                draw_Text("Observations: " + str(observation_count))
+                                draw_Text("Images: " + str(sum(filtered_df['Total_Images'])))
                         ], width=3),
                         dbc.Col([
-                            draw_Text("Death Count: " + str(death_count))
+                            draw_Text("Graffiti Images: " + str(sum(filtered_df['Graffiti_Count'])))
                         ], width=3),
                         dbc.Col([
-                            draw_Text("Survival Count: " + str(no_death_count))
+                            draw_Text("Non-Graffiti Images: " + str(sum(filtered_df['Non_Graffiti_Count'])))
                         ], width=3),
                     ])
 
