@@ -101,12 +101,12 @@ sidebar = html.Div(children = [
             html.H2("Description", className="display-4"),
             html.Hr(),
             html.P(
-                "Tutorial project detailing how to develop a basic front end application exploring the factors influencing heart failure", className="lead"
+                "This project compares the rate of graffiti occurence in the top US cities with socio-economic data from the 2020 US census", className="lead"
             ),
             html.H3("Model"
             ),
             html.P(
-                "This project uses a Random Forest Classifier to predict heart failure based on 12 independent variables.", className="lead"
+                "This project uses a CNN to identify graffiti from google streetview images and then joins this with census data.", className="lead"
             ),
 
             html.H3("Code"
@@ -115,7 +115,7 @@ sidebar = html.Div(children = [
                 "The complete code for this project is available on github.", className="lead"
             ),
             html.A(
-                href="https://github.com/pinstripezebra/Dash-Tutorial",
+                href="https://github.com/pinstripezebra/graffiti_dashboard",
                 children=[
                     html.Img(
                         alt="Link to Github",
@@ -131,8 +131,8 @@ sidebar = html.Div(children = [
 filters = html.Div([
             dbc.Row([
                 html.Div(children= [
-                html.H1('Heart Failure Prediction'),
-                dcc.Markdown('A comprehensive tool for examining factors impacting heart failure'),
+                html.H1('Graffiti Occurence'),
+                dcc.Markdown('A comprehensive tool for examining graffiti occurence rate in US cities'),
 
                 html.Label('City'),
                 dcc.Dropdown(
@@ -201,7 +201,7 @@ def update_output_div(city, population, income):
 
     #Making copy of DF and filtering
     filtered_df = df1
-    filtered_df = filter_dataframe(city,population, income)
+    filtered_df = filter_dataframe(filtered_df, city,population, income)
 
     #Creating figures
     factor_fig = px.bar(filtered_df, x= 'City', y="Graffiti_Count", color = 'State', 
