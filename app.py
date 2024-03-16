@@ -60,7 +60,7 @@ def draw_Text(input_text):
             ),
         ])
 
-def draw_Image(input_figure):
+def draw_Image(input_figure, height = '30vh'):
 
     return html.Div([
             dbc.Card(
@@ -69,7 +69,7 @@ def draw_Image(input_figure):
                             template='plotly_dark',
                             plot_bgcolor= 'rgba(0, 0, 0, 0)',
                             paper_bgcolor= 'rgba(0, 0, 0, 0)',
-                        )
+                        ), style={'height': height}
                     ) 
                 ])
             ),  
@@ -281,9 +281,9 @@ def update_output_div(city, population, income):
 
     return dbc.Row([
                 dbc.Col([
-                    draw_Image(map_fig)
+                    draw_Image(map_fig, height = '50vh')
                 ], 
-                width={"size": 6, "offset": 0})
+                width={"size": 8, "offset": 0})
             ])
 
 
