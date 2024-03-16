@@ -18,6 +18,7 @@ file_name = 'combined.csv'
 total_path = base_path + '//Data//' 
 df1 = pd.read_csv(total_path + file_name)
 df1['Graffiti_Percent'] = df1['Graffiti_Count']/df1['Total_Images']
+df1['Longitude'] = df1['Longitude'] * -1
 
 # Setting mapbox key
 f = open("./mapbox_key.txt", "r")
@@ -273,11 +274,19 @@ def update_output_div(city, population, income):
 
     #Creating figures
     map_fig = px.scatter_mapbox(filtered_df, 
-                            lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Graffiti_Percent",
+                            lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
                             hover_data=["City", 
                                         "Estimate!!Households!!Median income (dollars)", 
                                         "State"],
-                            zoom = 3)
+                            zoom = 4)
+    # Updating map figure text size
+    map_fig.update_layout(
+    font=dict(
+        family="Courier New, monospace",
+        size=30,  # Set the font size here
+        color="white"
+        )
+    )
 
     return dbc.Row([
                 dbc.Col([
