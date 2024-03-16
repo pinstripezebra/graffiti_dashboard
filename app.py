@@ -17,6 +17,11 @@ base_path = os.path.dirname(__file__)
 file_name = 'combined.csv'
 total_path = base_path + '//Data//' 
 df1 = pd.read_csv(total_path + file_name)
+df1['Graffiti_Percent'] = df1['Graffiti_Count']/df1['Total_Images']
+
+# Setting mapbox key
+f = open("./mapbox_key.txt", "r")
+px.set_mapbox_access_token(f.read())
 
 
 def filter_dataframe(input_df, var1, var2, var3):
@@ -182,6 +187,8 @@ dash_app.layout = html.Div(children = [
                 dbc.CardBody([
                     dbc.Row(id = 'kpi-Row'), 
                     html.Br(),
+                    dbc.Row(id = 'Map-Row'),
+                    html.Br(),
                     dbc.Row(id = 'EDA-Row'),
                     sources     
                 ]), color = 'dark'
@@ -249,6 +256,36 @@ def update_kpi(city, population, income):
                             draw_Text("Non-Graffiti Images: " + str(sum(filtered_df['Non_Graffiti_Count'])))
                         ], width=3),
                     ])
+
+
+# callback for map row
+@callback(
+    Output(component_id='Map-Row', component_property='children'),
+    [Input('City-Filter', 'value'),
+     Input('2020 population density-Filter', 'value'),
+     Input('Median income (dollars)-Filter', 'value')]
+)
+def update_output_div(city, population, income):
+
+    #Making copy of DF and filtering
+    filtered_df = df1
+    filtered_df = filter_dataframe(filtered_df, city,population, income)
+
+    #Creating figures
+    map_fig = px.scatter_mapbox(filtered_df, 
+                            lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Graffiti_Percent",
+                            hover_data=["City", 
+                                        "Estimate!!Households!!Median income (dollars)", 
+                                        "State"],
+                            zoom = 3)
+
+    return dbc.Row([
+                dbc.Col([
+                    draw_Image(map_fig)
+                ], 
+                width={"size": 6, "offset": 0})
+            ])
+
 
 # Runing the app
 if __name__ == '__main__':
