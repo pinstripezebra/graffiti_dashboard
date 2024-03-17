@@ -1,4 +1,5 @@
 # For data manipulation, visualization, app
+import dash
 from dash import Dash, dcc, html, callback,Input, Output,dash_table
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -188,7 +189,24 @@ dash_app.layout = html.Div(children = [
                 dbc.CardBody([
                     dbc.Row(id = 'kpi-Row'), 
                     html.Br(),
-                    dbc.Row(id = 'Map-Row'),
+                    # Manually defining map row so we can use inputs in callback
+                    dbc.Row([
+                        dbc.Col([
+                            # Adding in back bottom
+                            dbc.Button('🡠', id='back-button', outline=True, size="sm",
+                                className='mt-2 ml-2 col-1', 
+                                style={'display': 'none'}),
+                            dcc.Graph(px.scatter_mapbox(df1, 
+                                    lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
+                                    hover_data=["City", 
+                                            "Estimate!!Households!!Median income (dollars)", 
+                                            "State"],
+                                    zoom = 4),
+                                id = "map_fig", 
+                                height = '50vh')
+                        ], 
+                        width={"size": 8, "offset": 0})
+                    ]),
                     html.Br(),
                     dbc.Row(id = 'EDA-Row'),
                     sources     
@@ -261,39 +279,44 @@ def update_kpi(city, population, income):
 
 # callback for map row
 @callback(
-    Output(component_id='Map-Row', component_property='children'),
+    Output(component_id='map_fig', component_property='figure'),
     [Input('City-Filter', 'value'),
      Input('2020 population density-Filter', 'value'),
-     Input('Median income (dollars)-Filter', 'value')]
+     Input('Median income (dollars)-Filter', 'value'),
+     Input('map_fig', 'clickData'), # Click data from figure
+     Input('back-button', 'n_clicks')] # Button for returning
 )
-def update_output_div(city, population, income):
+def update_output_div(city, population, income, map_click, back_click):
+
+    # Checking which input was fired
+    ctx = dash.callback_context
 
     #Making copy of DF and filtering
     filtered_df = df1
     filtered_df = filter_dataframe(filtered_df, city,population, income)
 
-    #Creating figures
-    map_fig = px.scatter_mapbox(filtered_df, 
+    #Checking which input was fired for graph drilldown
+    trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    map_fig = ""
+    #If graph has been triggered
+    if trigger_id == 'map_fig':
+        map_fig = px.scatter_mapbox(filtered_df, 
                             lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
                             hover_data=["City", 
                                         "Estimate!!Households!!Median income (dollars)", 
                                         "State"],
                             zoom = 4)
-    # Updating map figure text size
-    map_fig.update_layout(
-    font=dict(
-        family="Courier New, monospace",
-        size=30,  # Set the font size here
-        color="white"
-        )
-    )
-
-    return dbc.Row([
-                dbc.Col([
-                    draw_Image(map_fig, height = '50vh')
-                ], 
-                width={"size": 8, "offset": 0})
-            ])
+    else:
+        # Creating figure with only data for filtered city
+        map_fig = px.scatter_mapbox(filtered_df, 
+                            lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
+                            hover_data=["City", 
+                                        "Estimate!!Households!!Median income (dollars)", 
+                                        "State"],
+                            zoom = 4)
+        
+    return map_fig
 
 
 # Runing the app
