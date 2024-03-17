@@ -196,14 +196,18 @@ dash_app.layout = html.Div(children = [
                             dbc.Button('🡠', id='back-button', outline=True, size="sm",
                                 className='mt-2 ml-2 col-1', 
                                 style={'display': 'none'}),
-                            dcc.Graph(px.scatter_mapbox(df1, 
+                            dcc.Graph(figure = px.scatter_mapbox(df1, 
                                     lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
                                     hover_data=["City", 
                                             "Estimate!!Households!!Median income (dollars)", 
                                             "State"],
-                                    zoom = 4),
-                                id = "map_fig", 
-                                height = '50vh')
+                                    zoom = 4).update_layout(
+                                        template='plotly_dark',
+                                        plot_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        paper_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        ),
+                                id = "map_fig",
+                                style={'height': '50vh'})
                         ], 
                         width={"size": 8, "offset": 0})
                     ]),
@@ -279,7 +283,8 @@ def update_kpi(city, population, income):
 
 # callback for map row
 @callback(
-    Output(component_id='map_fig', component_property='figure'),
+    [Output(component_id='map_fig', component_property='figure'),
+     Output('back-button', 'style')],
     [Input('City-Filter', 'value'),
      Input('2020 population density-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
@@ -306,7 +311,12 @@ def update_output_div(city, population, income, map_click, back_click):
                             hover_data=["City", 
                                         "Estimate!!Households!!Median income (dollars)", 
                                         "State"],
-                            zoom = 4)
+                            zoom = 4).update_layout(
+                                        template='plotly_dark',
+                                        plot_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        paper_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        )
+        return map_fig, {'display':'block'}
     else:
         # Creating figure with only data for filtered city
         map_fig = px.scatter_mapbox(filtered_df, 
@@ -314,9 +324,13 @@ def update_output_div(city, population, income, map_click, back_click):
                             hover_data=["City", 
                                         "Estimate!!Households!!Median income (dollars)", 
                                         "State"],
-                            zoom = 4)
+                            zoom = 4).update_layout(
+                                        template='plotly_dark',
+                                        plot_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        paper_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        )
+        return map_fig, {'display':'none'}
         
-    return map_fig
 
 
 # Runing the app
