@@ -13,13 +13,19 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
 
-# loading Datasets
+# Aggregated dataset by City
 base_path = os.path.dirname(__file__)
 file_name = 'combined.csv'
 total_path = base_path + '//Data//' 
 df1 = pd.read_csv(total_path + file_name)
 df1['Graffiti_Percent'] = df1['Graffiti_Count']/df1['Total_Images']
 df1['Longitude'] = df1['Longitude'] * -1
+
+# Loading non aggregated dataset
+raw_df = pd.read_csv('./Data/Image raw.csv')
+raw_df[['Latitude', 'Longitude']] = raw_df['coordinates'].str.split(', ', expand= True)
+raw_df['Latitude'] = raw_df['Latitude'].str.replace('(', '').astype(float)
+raw_df['Longitude'] = raw_df['Longitude'].str.replace(')', '').astype(float)
 
 # Setting mapbox key
 f = open("./mapbox_key.txt", "r")
@@ -293,11 +299,13 @@ def update_kpi(city, population, income):
 )
 def update_output_div(city, population, income, map_click, back_click):
 
+
     # Checking which input was fired
     ctx = dash.callback_context
 
     #Making copy of DF and filtering
     filtered_df = df1
+    df2 = raw_df
     filtered_df = filter_dataframe(filtered_df, city,population, income)
 
     #Checking which input was fired for graph drilldown
@@ -306,19 +314,18 @@ def update_output_div(city, population, income, map_click, back_click):
     map_fig = ""
     #If graph has been triggered
     if trigger_id == 'map_fig':
-        map_fig = px.scatter_mapbox(filtered_df, 
-                            lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
-                            hover_data=["City", 
-                                        "Estimate!!Households!!Median income (dollars)", 
-                                        "State"],
-                            zoom = 4).update_layout(
+        selected_city = map_click['points'][0]['customdata'][0]
+        print(selected_city)
+        map_fig = px.scatter_mapbox(df2[df2['city'] == selected_city], 
+                            lat="Latitude", lon="Longitude", color="graffiti", 
+                            hover_data=["city", "coordinates"],
+                            zoom = 8).update_layout(
                                         template='plotly_dark',
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
                                         )
         return map_fig, {'display':'block'}
     else:
-        # Creating figure with only data for filtered city
         map_fig = px.scatter_mapbox(filtered_df, 
                             lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
                             hover_data=["City", 
