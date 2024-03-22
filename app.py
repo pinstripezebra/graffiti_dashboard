@@ -319,7 +319,8 @@ def update_output_div(city, population, income, map_click, back_click):
         map_fig = px.scatter_mapbox(df2[df2['city'] == selected_city], 
                             lat="Latitude", lon="Longitude", color="graffiti", 
                             hover_data=["city", "coordinates"],
-                            zoom = 8).update_layout(
+                            size = 100,
+                            zoom = 12).update_layout(
                                         template='plotly_dark',
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
@@ -331,7 +332,8 @@ def update_output_div(city, population, income, map_click, back_click):
                             hover_data=["City", 
                                         "Estimate!!Households!!Median income (dollars)", 
                                         "State"],
-                            zoom = 4).update_layout(
+                            zoom = 4,
+                            mapbox_style = 'basic').update_layout(
                                         template='plotly_dark',
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
