@@ -148,7 +148,7 @@ filters = html.Div([
             dbc.Row([
                 html.Div(children= [
                 html.H1('Graffiti Occurence in the Top U.S. Cities'),
-                dcc.Markdown('A comprehensive tool for examining graffiti occurence rate in US cities'),
+                dcc.Markdown('Examining Graffiti Occurence versus Household Income in US cities'),
 
                 html.Label('City'),
                 dcc.Dropdown(
@@ -239,8 +239,7 @@ dash_app.layout = html.Div(children = [
 
 # callback for top row
 @callback(
-    [Output(component_id='income_fig2', component_property='figure'),
-     Output("City-Filter", "options")],
+    Output(component_id='income_fig2', component_property='figure'),
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
@@ -305,7 +304,7 @@ def update_output_div(city, population, income, clicks, map_clicks, back_click):
             yaxis_title="Median Household Income",
             legend_title="Legend Title"
         )
-        return income_fig, [{"label": selected_city, "value": selected_city}]
+        return income_fig
     else:
         income_fig = px.scatter(filtered_df, x='Median Household Income', y="Graffiti_Count", 
                             color="Median Household Income", 
@@ -323,7 +322,7 @@ def update_output_div(city, population, income, clicks, map_clicks, back_click):
             )
         )
         income_fig.update_layout(template='plotly_dark')
-        return income_fig, [{"label": i, "value": i} for i in df1['City'].drop_duplicates()] + [{"label": "Select All", "value": "all_values"}]
+        return income_fig
 
 
 # callback for kpi row
@@ -384,9 +383,10 @@ def update_kpi(city, population, income, income_select, map_select,back):
 )
 def update_output_div(city, population, income, map_click, scatter_click, back_click):
 
-    print(city)
+
     # Checking which input was fired
     ctx = dash.callback_context
+    context = ctx.triggered[0]["prop_id"]
     #Making copy of DF and filtering
     filtered_df = df1
     df2 = raw_df
@@ -395,9 +395,8 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
     #Checking which input was fired for graph drilldown
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
     map_fig = ""
-    
     #If map or scatter has been triggered
-    if trigger_id == 'map_fig' or scatter_click is not None:
+    if (trigger_id == 'map_fig' or scatter_click is not None) and context != 'back-button.n_clicks':
         selected_city = ""
         if scatter_click is not None:
             selected_city = scatter_click['points'][0]['customdata'][0]
@@ -427,7 +426,6 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
                                         )
-        print(type(selected_city))
         return map_fig, {'display':'block'}, top_fig, [{"label": selected_city, "value": selected_city}]
     
     else:
