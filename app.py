@@ -11,6 +11,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+import plotly.graph_objects as go
 
 
 # Aggregated dataset by City
@@ -22,6 +23,7 @@ df1['Graffiti_Percent'] = df1['Graffiti_Count']/df1['Total_Images']
 df1['Longitude'] = df1['Longitude'] * -1
 df1 = df1.rename(columns={'Estimate!!Households!!Median income (dollars)': 'Median Household Income'})
 df1['size'] = 1
+df1['opacity'] = 1
 
 # Loading non aggregated dataset
 raw_df = pd.read_csv('./Data/Image raw.csv')
@@ -221,7 +223,7 @@ dash_app.layout = html.Div(children = [
                     html.Br(),
                     dbc.Row(dbc.Row([
                         dbc.Col([
-                            dcc.Graph(id = "income_fig")
+                            dcc.Graph(id = "income_fig2")
                         ], width={"size": 7, "offset": 0})
                     ])),
                     sources     
@@ -231,13 +233,14 @@ dash_app.layout = html.Div(children = [
     ],style = CONTENT_STYLE)
 ])
 
+
 # callback for top row
 @callback(
-    Output(component_id='income_fig', component_property='figure'),
+    Output(component_id='income_fig2', component_property='figure'),
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
-     Input('income_fig', 'clickData')] # Click data from figure]
+     Input('income_fig2', 'clickData')] # Click data from figure]
 )
 def update_output_div(city, population, income, clicks):
 
@@ -245,24 +248,77 @@ def update_output_div(city, population, income, clicks):
     filtered_df = df1
     filtered_df = filter_dataframe(filtered_df, city,population, income)
 
-    #Creating figures
-    income_fig = px.scatter(filtered_df, x='Median Household Income', y="Graffiti_Count", 
-                         color="Median Household Income", 
-                         size = "size",
-                         trendline="lowess",
-                         title = "Medium Household Income vs Graffiti Occurence",
-                         hover_data=["City", 
-                                    "Median Household Income", 
-                                    "Graffiti_Count"])
-    income_fig.update_layout(
-        hoverlabel=dict(
-            bgcolor="white",
-            font_size=16,
-            font_family="Rockwell"
+    # If a point has been selected by the user
+    if clicks is not None:
+        print(clicks.keys())
+        print(clicks['points'])
+        selected_city = clicks['points'][0]['customdata'][0]
+        non_selected_df = filtered_df[filtered_df['City'] != selected_city]
+        selected_df = filtered_df[filtered_df['City'] == selected_city]
+        # Build figure
+        income_fig = go.Figure()
+
+        # Non selected trace
+        income_fig.add_trace(
+            go.Scatter(
+                mode='markers',
+                x=non_selected_df['Median Household Income'],
+                y=non_selected_df["Graffiti_Count"],
+                marker_color = non_selected_df['Median Household Income'],
+                #size = non_selected_df['size'],
+                marker = dict(opacity = 0.3,
+                              size = 20),
+                showlegend=False
+            )
         )
-    )
-    income_fig.update_layout(template='plotly_dark')
-    return income_fig
+        # selected trace
+        income_fig.add_trace(
+            go.Scatter(
+                mode='markers',
+                x=selected_df['Median Household Income'],
+                y=selected_df["Graffiti_Count"],
+                marker_color = selected_df['Median Household Income'],
+                #size = selected_df['size'],
+                marker = dict(opacity = 1,
+                              size = 20),
+                showlegend=False
+            )
+        )
+        income_fig.update_layout(
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=16,
+                font_family="Rockwell"
+            )
+        )
+        income_fig.update_layout(template='plotly_dark')
+        income_fig.update_layout(
+            title="Medium Household Income vs Graffiti Occurence",
+            xaxis_title="Graffiti_Count",
+            yaxis_title="Median Household Income",
+            legend_title="Legend Title"
+        )
+        return income_fig
+    else:
+        income_fig = px.scatter(filtered_df, x='Median Household Income', y="Graffiti_Count", 
+                            color="Median Household Income", 
+                            size = "size",
+                            trendline="lowess",
+                            title = "Medium Household Income vs Graffiti Occurence",
+                            #marker=dict(opacity=filtered_df['opacity']),
+                            hover_data=["City", 
+                                        "Median Household Income", 
+                                        "Graffiti_Count"])
+        income_fig.update_layout(
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=16,
+                font_family="Rockwell"
+            )
+        )
+        income_fig.update_layout(template='plotly_dark')
+        #income_fig.update_traces(unselected.marker.opacity=0.1 )
+        return income_fig
 
 
 # callback for kpi row
