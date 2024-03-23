@@ -26,6 +26,8 @@ raw_df = pd.read_csv('./Data/Image raw.csv')
 raw_df[['Latitude', 'Longitude']] = raw_df['coordinates'].str.split(', ', expand= True)
 raw_df['Latitude'] = raw_df['Latitude'].str.replace('(', '').astype(float)
 raw_df['Longitude'] = raw_df['Longitude'].str.replace(')', '').astype(float)
+raw_df['size'] = 1.5
+raw_df['graffiti'] = raw_df['graffiti'].astype(str)
 
 # Setting mapbox key
 f = open("./mapbox_key.txt", "r")
@@ -34,26 +36,23 @@ px.set_mapbox_access_token(f.read())
 
 def filter_dataframe(input_df, var1, var2, var3):
 
-    bp_list, sex_list,anaemia_list  = [], [], []
-    # Filtering for blood pressure
+    f1_list, f2_list,f3_list  = [], [], []
     if var1== "all_values":
-        bp_list = input_df['City'].drop_duplicates()
+        f1_list = input_df['City'].drop_duplicates()
     else:
-        bp_list = [var1]
-    # Filtering for sex
+        f1_list = [var1]
     if var2== "all_values":
-        sex_list = input_df['2020 population density'].drop_duplicates()
+        f2_list = input_df['State[c]'].drop_duplicates()
     else:
-        sex_list = [var2]
-    # Filtering for Anaemia
+        f2_list = [var2]
     if var3== "all_values":
-        anaemia_list = input_df['Estimate!!Households!!Median income (dollars)'].drop_duplicates()
+        f3_list = input_df['Estimate!!Households!!Median income (dollars)'].drop_duplicates()
     else:
-        anaemia_list = [var3]
+        f3_list = [var3]
     # Applying filters to dataframe
-    input_df = input_df[(input_df['City'].isin(bp_list)) &
-                              (input_df['2020 population density'].isin(sex_list)) &
-                               (input_df['Estimate!!Households!!Median income (dollars)'].isin(anaemia_list))]
+    input_df = input_df[(input_df['City'].isin(f1_list)) &
+                              (input_df['State[c]'].isin(f2_list)) &
+                               (input_df['Estimate!!Households!!Median income (dollars)'].isin(f3_list))]
     return input_df
 
 def draw_Text(input_text):
@@ -119,7 +118,7 @@ sidebar = html.Div(children = [
             html.H3("Model"
             ),
             html.P(
-                "This project uses a CNN to identify graffiti from google streetview images and then joins this with census data.", className="lead"
+                "This project uses a CNN to identify graffiti from google streetview images then joins this with census data.", className="lead"
             ),
 
             html.H3("Code"
@@ -144,7 +143,7 @@ sidebar = html.Div(children = [
 filters = html.Div([
             dbc.Row([
                 html.Div(children= [
-                html.H1('Graffiti Occurence'),
+                html.H1('Measuring Graffiti Occurence in the Top U.S. Cities'),
                 dcc.Markdown('A comprehensive tool for examining graffiti occurence rate in US cities'),
 
                 html.Label('City'),
@@ -154,10 +153,10 @@ filters = html.Div([
                                 [{"label": "Select All", "value": "all_values"}],
                     value = "all_values"),
 
-                html.Label('2020 population density'),
+                html.Label('State'),
                 dcc.Dropdown(
-                    id = '2020 population density-Filter',
-                    options = [{"label": i, "value": i} for i in df1['2020 population density'].drop_duplicates()] + 
+                    id = '2020 State-Filter',
+                    options = [{"label": i, "value": i} for i in df1['State[c]'].drop_duplicates()] + 
                                 [{"label": "Select All", "value": "all_values"}],
                     value = "all_values"),
 
@@ -230,7 +229,7 @@ dash_app.layout = html.Div(children = [
 @callback(
     Output(component_id='EDA-Row', component_property='children'),
     [Input('City-Filter', 'value'),
-     Input('2020 population density-Filter', 'value'),
+     Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value')]
 )
 def update_output_div(city, population, income):
@@ -265,7 +264,7 @@ def update_output_div(city, population, income):
 @callback(
     Output(component_id='kpi-Row', component_property='children'),
     [Input('City-Filter', 'value'),
-     Input('2020 population density-Filter', 'value'),
+     Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value')]
 )
 def update_kpi(city, population, income):
@@ -292,7 +291,7 @@ def update_kpi(city, population, income):
     [Output(component_id='map_fig', component_property='figure'),
      Output('back-button', 'style')],
     [Input('City-Filter', 'value'),
-     Input('2020 population density-Filter', 'value'),
+     Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
      Input('map_fig', 'clickData'), # Click data from figure
      Input('back-button', 'n_clicks')] # Button for returning
@@ -319,7 +318,7 @@ def update_output_div(city, population, income, map_click, back_click):
         map_fig = px.scatter_mapbox(df2[df2['city'] == selected_city], 
                             lat="Latitude", lon="Longitude", color="graffiti", 
                             hover_data=["city", "coordinates"],
-                            size = 100,
+                            size = "size",
                             zoom = 12).update_layout(
                                         template='plotly_dark',
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
