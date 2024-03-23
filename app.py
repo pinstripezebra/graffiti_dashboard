@@ -155,7 +155,8 @@ filters = html.Div([
                     id = 'City-Filter',
                     options = [{"label": i, "value": i} for i in df1['City'].drop_duplicates()] + 
                                 [{"label": "Select All", "value": "all_values"}],
-                    value = "all_values"),
+                    value = "all_values",
+                    multi = False),
 
                 html.Label('State'),
                 dcc.Dropdown(
@@ -238,7 +239,8 @@ dash_app.layout = html.Div(children = [
 
 # callback for top row
 @callback(
-    Output(component_id='income_fig2', component_property='figure'),
+    [Output(component_id='income_fig2', component_property='figure'),
+     Output("City-Filter", "options")],
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
@@ -303,7 +305,7 @@ def update_output_div(city, population, income, clicks, map_clicks, back_click):
             yaxis_title="Median Household Income",
             legend_title="Legend Title"
         )
-        return income_fig
+        return income_fig, [{"label": selected_city, "value": selected_city}]
     else:
         income_fig = px.scatter(filtered_df, x='Median Household Income', y="Graffiti_Count", 
                             color="Median Household Income", 
@@ -321,7 +323,7 @@ def update_output_div(city, population, income, clicks, map_clicks, back_click):
             )
         )
         income_fig.update_layout(template='plotly_dark')
-        return income_fig
+        return income_fig, [{"label": i, "value": i} for i in df1['City'].drop_duplicates()] + [{"label": "Select All", "value": "all_values"}]
 
 
 # callback for kpi row
@@ -371,7 +373,8 @@ def update_kpi(city, population, income, income_select, map_select,back):
 @callback(
     [Output(component_id='map_fig', component_property='figure'),
      Output('back-button', 'style'),
-     Output(component_id='top_cities', component_property='figure')],
+     Output(component_id='top_cities', component_property='figure'),
+     Output("City-Filter", "options")],
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
@@ -381,6 +384,7 @@ def update_kpi(city, population, income, income_select, map_select,back):
 )
 def update_output_div(city, population, income, map_click, scatter_click, back_click):
 
+    print(city)
     # Checking which input was fired
     ctx = dash.callback_context
     #Making copy of DF and filtering
@@ -423,7 +427,8 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
                                         )
-        return map_fig, {'display':'block'}, top_fig
+        print(type(selected_city))
+        return map_fig, {'display':'block'}, top_fig, [{"label": selected_city, "value": selected_city}]
     
     else:
         map_fig = px.scatter_mapbox(filtered_df, 
@@ -450,7 +455,7 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
                                         )
-        return map_fig, {'display':'none'}, top_fig
+        return map_fig, {'display':'none'}, top_fig, [{"label": i, "value": i} for i in df1['City'].drop_duplicates()] + [{"label": "Select All", "value": "all_values"}]
         
 
 
