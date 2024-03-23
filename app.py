@@ -329,13 +329,30 @@ def update_output_div(city, population, income, clicks, map_clicks, back_click):
     Output(component_id='kpi-Row', component_property='children'),
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
-     Input('Median income (dollars)-Filter', 'value')]
+     Input('Median income (dollars)-Filter', 'value'),
+     Input('income_fig2', 'clickData'),
+     Input('map_fig', 'clickData'),
+     Input('back-button', 'n_clicks')]
 )
-def update_kpi(city, population, income):
+def update_kpi(city, population, income, income_select, map_select,back):
 
     # Copying and filtering dataframe
     filtered_df = df1
     filtered_df = filter_dataframe(filtered_df, city, population, income)
+
+    ctx = dash.callback_context
+    context = ctx.triggered[0]["prop_id"]
+
+    # If a point has been selected by the user
+    if (income_select is not None or map_select is not None) and context != 'back-button.n_clicks':
+        selected_city = ""
+        if map_select is not None:
+            selected_city = map_select['points'][0]['customdata'][0]
+        else:
+            selected_city = income_select['points'][0]['customdata'][0]
+        filtered_df = filtered_df[filtered_df['City'] == selected_city]
+    else:
+        filtered_df = filtered_df
 
     return dbc.Row([
                         dbc.Col([
