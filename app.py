@@ -242,24 +242,29 @@ dash_app.layout = html.Div(children = [
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
-     Input('income_fig2', 'clickData')] # Click data from figure]
+     Input('income_fig2', 'clickData'), # Click data from figure
+     Input('map_fig', 'clickData'),# Click data from map figure
+     Input('back-button', 'n_clicks')] # Click data from back button
 )
-def update_output_div(city, population, income, clicks):
+def update_output_div(city, population, income, clicks, map_clicks, back_click):
 
     #Making copy of DF and filtering
     filtered_df = df1
     filtered_df = filter_dataframe(filtered_df, city,population, income)
 
+    ctx = dash.callback_context
+    context = ctx.triggered[0]["prop_id"]
     # If a point has been selected by the user
-    if clicks is not None:
-        print(clicks.keys())
-        print(clicks['points'])
-        selected_city = clicks['points'][0]['customdata'][0]
+    if (clicks is not None or map_clicks is not None) and context != 'back-button.n_clicks':
+        selected_city = ""
+        if map_clicks is not None:
+            selected_city = map_clicks['points'][0]['customdata'][0]
+        else:
+            selected_city = clicks['points'][0]['customdata'][0]
         non_selected_df = filtered_df[filtered_df['City'] != selected_city]
         selected_df = filtered_df[filtered_df['City'] == selected_city]
-        # Build figure
-        income_fig = go.Figure()
 
+        income_fig = go.Figure()
         # Non selected trace
         income_fig.add_trace(
             go.Scatter(
@@ -305,7 +310,6 @@ def update_output_div(city, population, income, clicks):
                             size = "size",
                             trendline="lowess",
                             title = "Medium Household Income vs Graffiti Occurence",
-                            #marker=dict(opacity=filtered_df['opacity']),
                             hover_data=["City", 
                                         "Median Household Income", 
                                         "Graffiti_Count"])
@@ -317,7 +321,6 @@ def update_output_div(city, population, income, clicks):
             )
         )
         income_fig.update_layout(template='plotly_dark')
-        #income_fig.update_traces(unselected.marker.opacity=0.1 )
         return income_fig
 
 
@@ -361,10 +364,8 @@ def update_kpi(city, population, income):
 )
 def update_output_div(city, population, income, map_click, scatter_click, back_click):
 
-
     # Checking which input was fired
     ctx = dash.callback_context
-
     #Making copy of DF and filtering
     filtered_df = df1
     df2 = raw_df
@@ -381,7 +382,6 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
             selected_city = scatter_click['points'][0]['customdata'][0]
         else:
             selected_city = map_click['points'][0]['customdata'][0]
-        print(selected_city)
         map_fig = px.scatter_mapbox(df2[df2['city'] == selected_city], 
                             lat="Latitude", lon="Longitude", color="graffiti", 
                             hover_data=["city", "coordinates"],
