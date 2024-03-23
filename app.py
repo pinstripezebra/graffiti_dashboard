@@ -265,7 +265,6 @@ def update_output_div(city, population, income, clicks):
                 x=non_selected_df['Median Household Income'],
                 y=non_selected_df["Graffiti_Count"],
                 marker_color = non_selected_df['Median Household Income'],
-                #size = non_selected_df['size'],
                 marker = dict(opacity = 0.3,
                               size = 20),
                 showlegend=False
@@ -278,7 +277,6 @@ def update_output_div(city, population, income, clicks):
                 x=selected_df['Median Household Income'],
                 y=selected_df["Graffiti_Count"],
                 marker_color = selected_df['Median Household Income'],
-                #size = selected_df['size'],
                 marker = dict(opacity = 1,
                               size = 20),
                 showlegend=False
@@ -354,10 +352,11 @@ def update_kpi(city, population, income):
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
-     Input('map_fig', 'clickData'), # Click data from figure
+     Input('map_fig', 'clickData'), # Click data from map figure
+     Input('income_fig2', 'clickData'), # Click data from scatter figure
      Input('back-button', 'n_clicks')] # Button for returning
 )
-def update_output_div(city, population, income, map_click, back_click):
+def update_output_div(city, population, income, map_click, scatter_click, back_click):
 
 
     # Checking which input was fired
@@ -370,11 +369,15 @@ def update_output_div(city, population, income, map_click, back_click):
 
     #Checking which input was fired for graph drilldown
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
     map_fig = ""
-    #If graph has been triggered
-    if trigger_id == 'map_fig':
-        selected_city = map_click['points'][0]['customdata'][0]
+    
+    #If map or scatter has been triggered
+    if trigger_id == 'map_fig' or scatter_click is not None:
+        selected_city = ""
+        if scatter_click is not None:
+            selected_city = scatter_click['points'][0]['customdata'][0]
+        else:
+            selected_city = map_click['points'][0]['customdata'][0]
         print(selected_city)
         map_fig = px.scatter_mapbox(df2[df2['city'] == selected_city], 
                             lat="Latitude", lon="Longitude", color="graffiti", 
