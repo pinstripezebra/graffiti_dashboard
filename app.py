@@ -49,14 +49,12 @@ def filter_dataframe(input_df, var1, var2, var3):
         f2_list = input_df['State[c]'].drop_duplicates()
     else:
         f2_list = [var2]
-    if var3== "all_values":
-        f3_list = input_df['Median Household Income'].drop_duplicates()
-    else:
-        f3_list = [var3]
+
     # Applying filters to dataframe
     input_df = input_df[(input_df['City'].isin(f1_list)) &
-                              (input_df['State[c]'].isin(f2_list)) &
-                               (input_df['Median Household Income'].isin(f3_list))]
+                        (input_df['State[c]'].isin(f2_list)) &
+                        (input_df['Median Household Income'] >= var3[0]) &
+                        (input_df['Median Household Income'] <= var3[1])]
     return input_df
 
 def draw_Text(input_text):
@@ -70,22 +68,6 @@ def draw_Text(input_text):
                 ])
             ),
         ])
-
-def draw_Image(input_figure, height = '30vh'):
-
-    return html.Div([
-            dbc.Card(
-                dbc.CardBody([
-                    dcc.Graph(figure=input_figure.update_layout(
-                            template='plotly_dark',
-                            plot_bgcolor= 'rgba(0, 0, 0, 0)',
-                            paper_bgcolor= 'rgba(0, 0, 0, 0)',
-                        ), style={'height': height}
-                    ) 
-                ])
-            ),  
-        ])
-
 
 # Building and Initializing the app
 dash_app = Dash(external_stylesheets=[dbc.themes.SLATE])
@@ -147,7 +129,7 @@ sidebar = html.Div(children = [
 filters = html.Div([
             dbc.Row([
                 html.Div(children= [
-                html.H1('Graffiti Occurence in the Top U.S. Cities'),
+                html.H1('Graffiti Occurence in Top U.S. Cities'),
                 dcc.Markdown('Examining Graffiti Occurence versus Household Income in US cities'),
 
                 html.Label('City'),
@@ -166,12 +148,12 @@ filters = html.Div([
                     value = "all_values"),
 
                 html.Label('Households Median income (dollars)'),
-                dcc.Dropdown(
-                    id = 'Median income (dollars)-Filter',
-                    options = [{"label": i, "value": i} for i in df1['Median Household Income'].drop_duplicates()] + 
-                                [{"label": "Select All", "value": "all_values"}],
-                    value = "all_values")])
+                dcc.RangeSlider(min = 10000, max = 130000,step = 5000,
+                    value = [min(df1['Median Household Income'].drop_duplicates()), 
+                             max(df1['Median Household Income'].drop_duplicates())],
+                             id = 'Median income (dollars)-Filter')
              ])
+            ])
 ], style = FILTER_STYLE)
 
 sources = html.Div([
