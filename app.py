@@ -145,7 +145,7 @@ sidebar = html.Div(children = [
 filters = html.Div([
             dbc.Row([
                 html.Div(children= [
-                html.H1('Measuring Graffiti Occurence in the Top U.S. Cities'),
+                html.H1('Graffiti Occurence in the Top U.S. Cities'),
                 dcc.Markdown('A comprehensive tool for examining graffiti occurence rate in US cities'),
 
                 html.Label('City'),
@@ -219,7 +219,11 @@ dash_app.layout = html.Div(children = [
                         width={"size": 8, "offset": 0})
                     ]),
                     html.Br(),
-                    dbc.Row(id = 'EDA-Row'),
+                    dbc.Row(dbc.Row([
+                        dbc.Col([
+                            dcc.Graph(id = "income_fig")
+                        ], width={"size": 7, "offset": 0})
+                    ])),
                     sources     
                 ]), color = 'dark'
             )
@@ -229,12 +233,13 @@ dash_app.layout = html.Div(children = [
 
 # callback for top row
 @callback(
-    Output(component_id='EDA-Row', component_property='children'),
+    Output(component_id='income_fig', component_property='figure'),
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
-     Input('Median income (dollars)-Filter', 'value')]
+     Input('Median income (dollars)-Filter', 'value'),
+     Input('income_fig', 'clickData')] # Click data from figure]
 )
-def update_output_div(city, population, income):
+def update_output_div(city, population, income, clicks):
 
     #Making copy of DF and filtering
     filtered_df = df1
@@ -256,12 +261,8 @@ def update_output_div(city, population, income):
             font_family="Rockwell"
         )
     )
-
-    return dbc.Row([
-                dbc.Col([
-                    draw_Image(income_fig)
-                ], width={"size": 7, "offset": 0.6})
-            ])
+    income_fig.update_layout(template='plotly_dark')
+    return income_fig
 
 
 # callback for kpi row
@@ -342,8 +343,7 @@ def update_output_div(city, population, income, map_click, back_click):
                             hover_data=["City", 
                                         "Median Household Income", 
                                         "State"],
-                            zoom = 4,
-                            mapbox_style = 'basic').update_layout(
+                            zoom = 4).update_layout(
                                         template='plotly_dark',
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
