@@ -17,3 +17,13 @@ The dashboard contains several key components:
 - Sorted bar chart by graffiti image count
 - Income versus graffiti count scatterplot
   ![alt text](image.png)
+
+### Data
+
+Graffiti data was pulled from google streetview and aggregated here: https://www.kaggle.com/datasets/pinstripezebra/graffiti-classification
+
+Income data was from the 2020 U.S. census available here: https://www.census.gov/topics/income-poverty/income/data/tables.html
+
+### Graffiti Identification
+
+Graffiti was identified using a CNN trained using a semi-supervised process incorporating images of known graffiti scraped from google images. More information on the model training process can be found here: https://medium.com/@seelcs12/cnns-for-imbalanced-image-classification-with-tensorflow-7284a8c4a2e4
