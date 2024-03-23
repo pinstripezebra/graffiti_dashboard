@@ -218,7 +218,9 @@ dash_app.layout = html.Div(children = [
                                 id = "map_fig",
                                 style={'height': '50vh'})
                         ], 
-                        width={"size": 8, "offset": 0})
+                        width={"size": 8, "offset": 0}),
+                        dbc.Col([ dcc.Graph(id = 'top_cities')],
+                                width={"size": 3, "offset": 0})
                     ]),
                     html.Br(),
                     dbc.Row(dbc.Row([
@@ -348,7 +350,8 @@ def update_kpi(city, population, income):
 # callback for map row
 @callback(
     [Output(component_id='map_fig', component_property='figure'),
-     Output('back-button', 'style')],
+     Output('back-button', 'style'),
+     Output(component_id='top_cities', component_property='figure')],
     [Input('City-Filter', 'value'),
      Input('2020 State-Filter', 'value'),
      Input('Median income (dollars)-Filter', 'value'),
@@ -395,7 +398,16 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
                 font_family="Rockwell"
             )
         )
-        return map_fig, {'display':'block'}
+        top_fig  = px.bar(filtered_df[filtered_df['City'] == selected_city], 
+                          x="Graffiti_Count", y="City", 
+                          color = "Graffiti_Count",orientation='h',
+                          title="Top Cities By Graffiti Count").update_layout(
+                                        template='plotly_dark',
+                                        plot_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        paper_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        )
+        return map_fig, {'display':'block'}, top_fig
+    
     else:
         map_fig = px.scatter_mapbox(filtered_df, 
                             lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
@@ -414,7 +426,14 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
                 font_family="Rockwell"
             )
         )
-        return map_fig, {'display':'none'}
+        top_fig  = px.bar(filtered_df.sort_values(by="Graffiti_Count"), x="Graffiti_Count", y="City", 
+                          color = "Graffiti_Count",orientation='h',
+                          title="Top Cities By Graffiti Count").update_layout(
+                                        template='plotly_dark',
+                                        plot_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        paper_bgcolor= 'rgba(0, 0, 0, 0)',
+                                        )
+        return map_fig, {'display':'none'}, top_fig
         
 
 
