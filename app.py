@@ -20,6 +20,8 @@ total_path = base_path + '//Data//'
 df1 = pd.read_csv(total_path + file_name)
 df1['Graffiti_Percent'] = df1['Graffiti_Count']/df1['Total_Images']
 df1['Longitude'] = df1['Longitude'] * -1
+df1 = df1.rename(columns={'Estimate!!Households!!Median income (dollars)': 'Median Household Income'})
+df1['size'] = 1
 
 # Loading non aggregated dataset
 raw_df = pd.read_csv('./Data/Image raw.csv')
@@ -46,13 +48,13 @@ def filter_dataframe(input_df, var1, var2, var3):
     else:
         f2_list = [var2]
     if var3== "all_values":
-        f3_list = input_df['Estimate!!Households!!Median income (dollars)'].drop_duplicates()
+        f3_list = input_df['Median Household Income'].drop_duplicates()
     else:
         f3_list = [var3]
     # Applying filters to dataframe
     input_df = input_df[(input_df['City'].isin(f1_list)) &
                               (input_df['State[c]'].isin(f2_list)) &
-                               (input_df['Estimate!!Households!!Median income (dollars)'].isin(f3_list))]
+                               (input_df['Median Household Income'].isin(f3_list))]
     return input_df
 
 def draw_Text(input_text):
@@ -163,7 +165,7 @@ filters = html.Div([
                 html.Label('Households Median income (dollars)'),
                 dcc.Dropdown(
                     id = 'Median income (dollars)-Filter',
-                    options = [{"label": i, "value": i} for i in df1['Estimate!!Households!!Median income (dollars)'].drop_duplicates()] + 
+                    options = [{"label": i, "value": i} for i in df1['Median Household Income'].drop_duplicates()] + 
                                 [{"label": "Select All", "value": "all_values"}],
                     value = "all_values")])
              ])
@@ -204,7 +206,7 @@ dash_app.layout = html.Div(children = [
                             dcc.Graph(figure = px.scatter_mapbox(df1, 
                                     lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
                                     hover_data=["City", 
-                                            "Estimate!!Households!!Median income (dollars)", 
+                                            "Median Household Income", 
                                             "State"],
                                     zoom = 4).update_layout(
                                         template='plotly_dark',
@@ -239,24 +241,26 @@ def update_output_div(city, population, income):
     filtered_df = filter_dataframe(filtered_df, city,population, income)
 
     #Creating figures
-    factor_fig = px.bar(filtered_df, x= 'City', y="Graffiti_Count", color = 'State', 
-                              title = "City and State vs Graffiti")
-    age_fig = px.scatter(filtered_df, x='City', y="Graffiti_Count", 
-                         color="Estimate!!Households!!Median income (dollars)", 
-                         title = "City and Income vs Graffiti")
-    time_fig = px.scatter(filtered_df, x = 'City', y = 'Graffiti_Count', color = '2020',
-                              title = 'Graffiti versus population')
+    income_fig = px.scatter(filtered_df, x='Median Household Income', y="Graffiti_Count", 
+                         color="Median Household Income", 
+                         size = "size",
+                         trendline="lowess",
+                         title = "Medium Household Income vs Graffiti Occurence",
+                         hover_data=["City", 
+                                    "Median Household Income", 
+                                    "Graffiti_Count"])
+    income_fig.update_layout(
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=16,
+            font_family="Rockwell"
+        )
+    )
 
     return dbc.Row([
                 dbc.Col([
-                    draw_Image(factor_fig)
-                ], width={"size": 3, "offset": 0}),
-                dbc.Col([
-                    draw_Image(age_fig)
-                ],width={"size": 3}),
-                dbc.Col([
-                    draw_Image(time_fig)
-                ], width={"size": 3}),
+                    draw_Image(income_fig)
+                ], width={"size": 7, "offset": 0.6})
             ])
 
 
@@ -324,12 +328,19 @@ def update_output_div(city, population, income, map_click, back_click):
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
                                         )
+        map_fig.update_layout(
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=16,
+                font_family="Rockwell"
+            )
+        )
         return map_fig, {'display':'block'}
     else:
         map_fig = px.scatter_mapbox(filtered_df, 
                             lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
                             hover_data=["City", 
-                                        "Estimate!!Households!!Median income (dollars)", 
+                                        "Median Household Income", 
                                         "State"],
                             zoom = 4,
                             mapbox_style = 'basic').update_layout(
@@ -337,6 +348,13 @@ def update_output_div(city, population, income, map_click, back_click):
                                         plot_bgcolor= 'rgba(0, 0, 0, 0)',
                                         paper_bgcolor= 'rgba(0, 0, 0, 0)',
                                         )
+        map_fig.update_layout(
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=16,
+                font_family="Rockwell"
+            )
+        )
         return map_fig, {'display':'none'}
         
 
