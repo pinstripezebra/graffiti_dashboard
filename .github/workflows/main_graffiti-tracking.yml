@@ -64,4 +64,4 @@ jobs:
         with:
           app-name: 'graffiti-tracking'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_3437FCC6DFD7413BA03F6BE2E124B8CD }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_314C29EF848B429190BC6E484B71AF40 }}
