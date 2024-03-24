@@ -31,8 +31,9 @@ raw_df['graffiti'] = raw_df['graffiti'].astype(str)
 # Setting mapbox key
 #f = open("./mapbox_key.txt", "r")
 #px.set_mapbox_access_token(f.read())
-key = os.environ['API_KEY']
-px.set_mapbox_access_token(key)
+#key = os.environ['API_KEY']
+#print(key)
+px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXNzZWUiLCJhIjoiY2xuejhzeDNxMHRsejJtcWIxOWo0ZGg1eiJ9.FUIBVWbJjEwE0SS-CYAaHg")
 
 
 def filter_dataframe(input_df, var1, var2, var3):
