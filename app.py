@@ -88,7 +88,6 @@ CONTENT_STYLE = {
     "display":"inline-block",
     "width": "100%"
 }
-FILTER_STYLE = {"width": "30%"}
 
 # Defining components
 sidebar = html.Div(children = [
@@ -124,33 +123,39 @@ sidebar = html.Div(children = [
 
 filters = html.Div([
             dbc.Row([
-                html.Div(children= [
-                html.H1('Graffiti Occurence in Top U.S. Cities'),
-                dcc.Markdown('Examining Graffiti Occurence versus Household Income in US cities'),
+                dbc.Col([
+                    html.H1('Graffiti Occurence in Top U.S. Cities'),
+                    dcc.Markdown('Examining Graffiti Occurence versus Household Income in US cities')
+                ])
+            ], align = 'start'),
+            dbc.Row([
+                dbc.Col([
+                        html.Label('City'),
+                        dcc.Dropdown(
+                            id = 'City-Filter',
+                            options = [{"label": i, "value": i} for i in df1['City'].drop_duplicates()] + 
+                                        [{"label": "Select All", "value": "all_values"}],
+                            value = "all_values",
+                            multi = False),
 
-                html.Label('City'),
-                dcc.Dropdown(
-                    id = 'City-Filter',
-                    options = [{"label": i, "value": i} for i in df1['City'].drop_duplicates()] + 
-                                [{"label": "Select All", "value": "all_values"}],
-                    value = "all_values",
-                    multi = False),
+                        html.Label('State'),
+                        dcc.Dropdown(
+                            id = '2020 State-Filter',
+                            options = [{"label": i, "value": i} for i in df1['State[c]'].drop_duplicates()] + 
+                                        [{"label": "Select All", "value": "all_values"}],
+                            value = "all_values")
+                ],  width={"size": 4, "offset": 0}),
+                dbc.Col([
+                        html.Label('Households Median income (dollars)'),
+                        dcc.RangeSlider(min = 10000, max = 130000,step = 5000,
+                            value = [min(df1['Median Household Income'].drop_duplicates()), 
+                                    max(df1['Median Household Income'].drop_duplicates())],
+                                    id = 'Median income (dollars)-Filter')
+                    ], width={"size": 4, "offset": 0})
+                ], align = 'end')
+            
 
-                html.Label('State'),
-                dcc.Dropdown(
-                    id = '2020 State-Filter',
-                    options = [{"label": i, "value": i} for i in df1['State[c]'].drop_duplicates()] + 
-                                [{"label": "Select All", "value": "all_values"}],
-                    value = "all_values"),
-
-                html.Label('Households Median income (dollars)'),
-                dcc.RangeSlider(min = 10000, max = 130000,step = 5000,
-                    value = [min(df1['Median Household Income'].drop_duplicates()), 
-                             max(df1['Median Household Income'].drop_duplicates())],
-                             id = 'Median income (dollars)-Filter')
-             ])
-            ])
-], style = FILTER_STYLE)
+],className="pad-row",)
 
 sources = html.Div([
                 html.H3('Data Sources:'),
@@ -236,7 +241,7 @@ def update_output_div(city, population, income, clicks, map_clicks, back_click):
     # If a point has been selected by the user
     if (clicks is not None or map_clicks is not None) and context != 'back-button.n_clicks':
         selected_city = ""
-        if map_clicks is not None:
+        if "map" in context:
             selected_city = map_clicks['points'][0]['customdata'][0]
         else:
             selected_city = clicks['points'][0]['customdata'][0]
@@ -325,7 +330,7 @@ def update_kpi(city, population, income, income_select, map_select,back):
     # If a point has been selected by the user
     if (income_select is not None or map_select is not None) and context != 'back-button.n_clicks':
         selected_city = ""
-        if map_select is not None:
+        if "map" in context:
             selected_city = map_select['points'][0]['customdata'][0]
         else:
             selected_city = income_select['points'][0]['customdata'][0]
@@ -376,7 +381,7 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
     #If map or scatter has been triggered
     if (trigger_id == 'map_fig' or scatter_click is not None) and context != 'back-button.n_clicks':
         selected_city = ""
-        if scatter_click is not None:
+        if "income" in context:
             selected_city = scatter_click['points'][0]['customdata'][0]
         else:
             selected_city = map_click['points'][0]['customdata'][0]
