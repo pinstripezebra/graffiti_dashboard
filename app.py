@@ -70,8 +70,8 @@ def draw_Text(input_text):
         ])
 
 # Building and Initializing the app
-app = Dash(external_stylesheets=[dbc.themes.SLATE])
-server = app.server
+dash_app = Dash(external_stylesheets=[dbc.themes.SLATE])
+app = dash_app.server
 
 # Defining component styles
 SIDEBAR_STYLE = {
@@ -172,7 +172,7 @@ sources = html.Div([
                 ])
              ])
 
-app.layout = html.Div(children = [
+dash_app.layout = html.Div(children = [
     sidebar,
      html.Div([
         filters,
@@ -441,4 +441,4 @@ def update_output_div(city, population, income, map_click, scatter_click, back_c
 
 # Runing the app
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    dash_app.run_server(debug=False)
