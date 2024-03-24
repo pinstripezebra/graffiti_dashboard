@@ -6,11 +6,6 @@ import plotly.express as px
 import pandas as pd
 import os 
 import numpy as np
-
-# For modeling
-from sklearn.metrics import confusion_matrix
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 import plotly.graph_objects as go
 
 
@@ -34,8 +29,9 @@ raw_df['size'] = 1.5
 raw_df['graffiti'] = raw_df['graffiti'].astype(str)
 
 # Setting mapbox key
-f = open("./mapbox_key.txt", "r")
-px.set_mapbox_access_token(f.read())
+#f = open("./mapbox_key.txt", "r")
+#px.set_mapbox_access_token(f.read())
+px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXNzZWUiLCJhIjoiY2xuejhzeDNxMHRsejJtcWIxOWo0ZGg1eiJ9.FUIBVWbJjEwE0SS-CYAaHg")
 
 
 def filter_dataframe(input_df, var1, var2, var3):
