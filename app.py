@@ -9,16 +9,16 @@ import numpy as np
 import plotly.graph_objects as go
 
 
-# Aggregated dataset by City
+# Loading dataset aggregated by city
 base_path = os.path.dirname(__file__)
 file_name = 'combined.csv'
 total_path = base_path + '//Data//' 
 df1 = pd.read_csv(total_path + file_name)
+
 df1['Graffiti_Percent'] = df1['Graffiti_Count']/df1['Total_Images']
 df1['Longitude'] = df1['Longitude'] * -1
 df1 = df1.rename(columns={'Estimate!!Households!!Median income (dollars)': 'Median Household Income'})
 df1['size'] = 1
-df1['opacity'] = 1
 
 # Loading non aggregated dataset
 raw_df = pd.read_csv('./Data/Image raw.csv')
@@ -191,16 +191,7 @@ dash_app.layout = html.Div(children = [
                             dbc.Button('🡠', id='back-button', outline=True, size="sm",
                                 className='mt-2 ml-2 col-1', 
                                 style={'display': 'none'}),
-                            dcc.Graph(figure = px.scatter_mapbox(df1, 
-                                    lat="Latitude", lon="Longitude", color="Graffiti_Percent", size="Total_Images",
-                                    hover_data=["City", 
-                                            "Median Household Income", 
-                                            "State"],
-                                    zoom = 4).update_layout(
-                                        template='plotly_dark',
-                                        plot_bgcolor= 'rgba(0, 0, 0, 0)',
-                                        paper_bgcolor= 'rgba(0, 0, 0, 0)',
-                                        ),
+                            dcc.Graph(
                                 id = "map_fig",
                                 style={'height': '50vh'})
                         ], 
